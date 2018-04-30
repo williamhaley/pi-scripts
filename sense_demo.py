@@ -5,6 +5,8 @@ from signal import pause
 
 import math
 import atexit
+import subprocess
+from subprocess import Popen
 
 from sense import rainbow
 
@@ -55,12 +57,23 @@ def refresh():
     [r, g, b] = rainbow_pixels[index(x, y)]
     sense.set_pixel(x, y, r, g, b)
 
+def pressed(event):
+    if event.action == ACTION_RELEASED:
+        i = index(x, y) + 1
+        print('pressed:', i)
+        Popen(
+            ["cvlc", "--play-and-exit", '{}.mp3'.format(i)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
 atexit.register(on_exit)
 
 sense.stick.direction_up = pushed_up
 sense.stick.direction_down = pushed_down
 sense.stick.direction_left = pushed_left
 sense.stick.direction_right = pushed_right
+sense.stick.direction_middle = pressed
 sense.stick.direction_any = refresh
 refresh()
 pause()
