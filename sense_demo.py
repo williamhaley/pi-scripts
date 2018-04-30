@@ -3,9 +3,11 @@
 from sense_hat import SenseHat, ACTION_PRESSED, ACTION_HELD, ACTION_RELEASED
 from signal import pause
 
+import time
 import math
 import atexit
 import subprocess
+import os
 from subprocess import Popen
 
 from sense import rainbow
@@ -22,6 +24,10 @@ rainbow_pixels = rainbow.default_pixels()
 total_pixels = len(sense.get_pixels())
 dim_size = int(math.sqrt(total_pixels))
 max_value = dim_size - 1
+
+processes = []
+
+last_press_time = 0
 
 def on_exit():
     sense.clear()
@@ -57,15 +63,42 @@ def refresh():
     [r, g, b] = rainbow_pixels[index(x, y)]
     sense.set_pixel(x, y, r, g, b)
 
+def play_audio(file_name):
+    global processes
+    print('playing:', file_name)
+    processes.append(Popen(
+        ['mpg123', file_name],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ))
+
+def kill_running_processes():
+    global processes
+    print('kill running processes')
+    for process in processes:
+        process.kill()
+    # Must zero out or processes will be zombies and never GCed
+    processes = []
+
 def pressed(event):
+    global last_pressed_time
+    global processes
+
+    print('action:', event.action)
+
     if event.action == ACTION_RELEASED:
-        i = index(x, y) + 1
-        print('pressed:', i)
-        Popen(
-            ["cvlc", "--play-and-exit", '{}.mp3'.format(i)],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
-        )
+        if time.time() - last_pressed_time < 0.5:
+            i = index(x, y) + 1
+            file_name = '{}/{}.mp3'.format(os.getcwd(), i)
+            play_audio(file_name)
+        else:
+            kill_running_processes()
+    elif event.action == ACTION_HELD:
+        print('held:')
+    elif event.action == ACTION_PRESSED:
+        last_pressed_time = time.time()
+    else:
+        print('unknown action')
 
 atexit.register(on_exit)
 
