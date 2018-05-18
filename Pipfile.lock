@@ -1,0 +1,29 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "dd5810c0219d450a81a9f9385a74a8faace1b30e6ea8d6ae59f9cf741c31264d"
+        },
+        "pipfile-spec": 6,
+        "requires": {
+            "python_version": "3.6"
+        },
+        "sources": [
+            {
+                "name": "pypi",
+                "url": "https://pypi.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "pyalsaaudio": {
+            "hashes": [
+                "sha256:5bdc2abe410eab1a609a2f74c40076299e9d3843d1346e0dea240ad1f2b1111c",
+                "sha256:84e8f8da544d7f4bd96479ce4a237600077984d9be1d7f16c1d9a492ecf50085"
+            ],
+            "index": "pypi",
+            "version": "==0.8.4"
+        }
+    },
+    "develop": {}
+}

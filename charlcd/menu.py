@@ -1,13 +1,16 @@
+import os
+
 class LCDMenu():
     """
     Navigate our menu hierarchy. Set colors, run actions, enter sub-menus, etc.
     """
-    def __init__(self, lcd, menu):
+    def __init__(self, lcd, menu, file_handler):
         self.lcd = lcd
         self.menus = [menu]
         self.indexes = [0]
         self.current_color = (1.0, 1.0, 1.0)
         self._create_custom_chars()
+        self._file_handler = file_handler
         self.update_menu()
 
     def _create_custom_chars(self):
@@ -32,12 +35,28 @@ class LCDMenu():
     def in_sub_menu(self):
         return len(self.indexes) > 1
 
+    def _dir_list_items(self, path):
+        paths = sorted(os.listdir(path), key=lambda s: s.lower())
+        items = []
+        for p in paths:
+            file_path = os.path.join(path, p)
+
+            def handle_file(file_path):
+                return lambda: self._file_handler(file_path)
+
+            items.append({ 'text': os.path.splitext(p)[0], 'action': handle_file(file_path) })
+        return items
+
     def select(self):
         current_item = self.current_item()
         if 'action' in current_item:
             current_item['action']()
         elif 'menu' in current_item:
             self.menus.append(current_item['menu'])
+            self.indexes.append(0)
+            self.update_menu()
+        elif 'dir_list' in current_item:
+            self.menus.append(self._dir_list_items(current_item['dir_list']))
             self.indexes.append(0)
             self.update_menu()
 
@@ -63,3 +82,7 @@ class LCDMenu():
             self.current_color = self.current_item()['color']
         self.lcd.set_color(self.current_color[0], self.current_color[1], self.current_color[2])
         self.lcd.message(self.current_item()['text'])
+
+    def wake_up(self):
+        self.lcd.set_color(self.current_color[0], self.current_color[1], self.current_color[2])
+
